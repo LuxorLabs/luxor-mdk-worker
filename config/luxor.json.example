@@ -1,0 +1,7 @@
+{
+  "apiUrl": "https://app.luxor.tech/api",
+  "apiKey": "",
+  "currency": "BTC",
+  "subaccounts": [],
+  "siteId": null
+}

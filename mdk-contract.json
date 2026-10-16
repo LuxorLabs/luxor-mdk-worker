@@ -1,0 +1,66 @@
+{
+  "$schema": "../../../../core/mdk-worker/mdk-contract.schema.json",
+  "metadata": {
+    "provider": "luxor",
+    "deviceFamily": "minerpool",
+    "brand": "Luxor",
+    "modelsSupported": [
+      "LUXOR-BTC"
+    ],
+    "overview": "Reports Luxor Bitcoin pool hashrate, active workers, balance and 24-hour mining revenue over the read-only Luxor Pool API v2."
+  },
+  "capabilities": {
+    "telemetry": [
+      {
+        "name": "hashrate",
+        "unit": "H/s",
+        "type": "number",
+        "handler": "src/telemetry/hashrate.js",
+        "description": "Five-minute pool-side hashrate across the configured subaccounts or site."
+      },
+      {
+        "name": "workers_online",
+        "unit": "",
+        "type": "number",
+        "handler": "src/telemetry/workers-online.js",
+        "description": "Active miners across the configured subaccounts or site."
+      },
+      {
+        "name": "balance",
+        "unit": "BTC",
+        "type": "number",
+        "handler": "src/telemetry/balance.js",
+        "description": "Unpaid BTC balance across the configured subaccounts or site."
+      },
+      {
+        "name": "estimated_earnings",
+        "unit": "BTC",
+        "type": "number",
+        "handler": "src/telemetry/estimated-earnings.js",
+        "description": "Mining revenue over the last 24 hours, used as the estimate for today."
+      }
+    ],
+    "commands": [],
+    "config": {
+      "schema": "luxor_config_v1"
+    },
+    "health": {
+      "supportedStates": [
+        "OK",
+        "DEGRADED",
+        "OFFLINE"
+      ],
+      "alerts": [
+        "alert.pool_unreachable",
+        "alert.hashrate_low"
+      ],
+      "troubleshooting": [
+        "If alert.pool_unreachable, verify apiUrl, apiKey, the subaccount names or site ID, and outbound HTTPS connectivity.",
+        "If alert.hashrate_low, cross-check the fleet's own hashrate before escalating."
+      ]
+    },
+    "errors": {
+      "E_POOL_API": "Pool REST API request failed"
+    }
+  }
+}
