@@ -1,3 +1,5 @@
 'use strict'
 
-module.exports = async (ctx) => ctx.device.getMetric('hashrate')
+const { getSummary } = require('../client')
+
+module.exports = async () => (await getSummary()).hashrate

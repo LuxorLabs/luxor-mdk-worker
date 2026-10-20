@@ -52,6 +52,7 @@ test('worker serves telemetry over HRPC against the mock', { timeout: 60000 }, a
 
   const initial = await send({ type: 'metrics' })
   t.ok(initial.payload.metrics.hashrate.error.includes('E_POOL_API'), 'no fabricated startup zeros')
+  t.alike(initial.payload.metrics.health, { status: 'OFFLINE', error: 'E_POOL_API' })
 
   const now = new Date()
   await worker.pool.fetchWorkers(now)
@@ -63,6 +64,8 @@ test('worker serves telemetry over HRPC against the mock', { timeout: 60000 }, a
   t.is(metrics.workers_online, 1)
   t.is(metrics.balance, 0.00125)
   t.is(metrics.estimated_earnings, 0.00012)
+  t.alike(metrics.health, { status: 'OK' })
+  t.absent(JSON.stringify(metrics).includes(keys.apiKey), 'the API key never leaves the worker')
 
   const workers = await worker.pool.getWorkers({})
   t.is(workers.workers.length, 2)

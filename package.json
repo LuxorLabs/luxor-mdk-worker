@@ -23,7 +23,6 @@
     "index.js",
     "mdk-contract.json",
     "src/",
-    "mock/",
     "config/",
     "README.md",
     "LICENSE",
@@ -37,7 +36,8 @@
     "test": "npm run lint && npm run test:unit && npm run test:integration",
     "test:unit": "NODE_ENV=test brittle tests/unit/**/*.test.js",
     "test:integration": "NODE_ENV=test brittle tests/integration/**/*.test.js",
-    "test:coverage": "NODE_ENV=test brittle --coverage 'tests/**/*.test.js'"
+    "test:coverage": "NODE_ENV=test brittle --coverage 'tests/**/*.test.js'",
+    "test:live": "node scripts/test-live-readonly.js"
   },
   "peerDependencies": {
     "@tetherto/mdk": "*"

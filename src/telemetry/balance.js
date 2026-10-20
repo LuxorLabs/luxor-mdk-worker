@@ -1,3 +1,5 @@
 'use strict'
 
-module.exports = async (ctx) => ctx.device.getMetric('balance')
+const { getSummary } = require('../client')
+
+module.exports = async () => (await getSummary()).balance

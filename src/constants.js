@@ -13,6 +13,12 @@ module.exports = {
   // One request per second per worker, the same pace as the MiningOS worker.
   REQUEST_INTERVAL_MS: SECOND_MS,
   REQUEST_TIMEOUT_MS: 30 * SECOND_MS,
+  // The summary's hashrate is a 5 minute average; a metrics pull every few
+  // seconds should not cost one API request each.
+  SUMMARY_CACHE_MS: 30 * SECOND_MS,
+  // Channels are read one after another, so without this a down API would
+  // cost one request, and up to one timeout, per channel.
+  SUMMARY_ERROR_CACHE_MS: 10 * SECOND_MS,
   PAGE_SIZE: 100,
   MAX_PAGES: 10000,
 
