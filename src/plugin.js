@@ -1,6 +1,7 @@
 'use strict'
 
 const path = require('node:path')
+const { errorCode } = require('./errors')
 
 // The contract's handler files are written for directory loading
 // (WorkerRuntimeV2). On WorkerRuntime the device is a LuxorPool, so each
@@ -21,7 +22,10 @@ function loadHandler (file, { section, name }) {
         ctx.device.getMetric('hashrate')
         return { status: 'OK' }
       } catch (err) {
-        return { status: 'OFFLINE', error: /E(RR)?_[A-Z_]+/.exec(err.message)?.[0] || 'E_POOL_API' }
+        // The poll's own error (ERR_LUXOR_AUTH, ...) matches what the
+        // directory-loaded handler reports; E_POOL_API is left for "no fresh
+        // poll yet", which only this runtime has.
+        return { status: 'OFFLINE', error: errorCode(ctx.device._statsError || err) }
       }
     }
   }

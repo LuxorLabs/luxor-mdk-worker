@@ -67,7 +67,10 @@
       ]
     },
     "errors": {
-      "E_POOL_API": "Pool REST API request failed"
+      "E_POOL_API": "Pool REST API request failed, or no fresh poll yet",
+      "ERR_LUXOR_AUTH": "The API key is wrong or revoked",
+      "ERR_LUXOR_API": "A Luxor API request failed; the message carries the path and HTTP status",
+      "ERR_LUXOR_DATA": "A Luxor API response field is missing or malformed"
     }
   }
 }

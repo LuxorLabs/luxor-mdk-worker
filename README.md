@@ -144,8 +144,10 @@ On `WorkerRuntime` the channels read the pool manager's last poll instead of
 calling the API. Statistics refresh every minute and the worker list every
 five minutes; a tick that fires while a poll is running joins it. Channels
 answer `E_POOL_API` until the first successful poll, after a failed poll and
-whenever the snapshot is older than three minutes, and `health` reports
-`{ status: 'OFFLINE', error: 'E_POOL_API' }` then.
+whenever the snapshot is older than three minutes. `health` then reports the
+failed poll's own code, such as `ERR_LUXOR_AUTH`, the same as the
+directory-loaded worker, and `E_POOL_API` only before the first successful
+poll or when the snapshot is stale.
 
 The `stats` extension carries one entry for the whole scope, named after the
 subaccounts or `site:<id>`, and adds `efficiency`, `uptime_24h`, `hashprice`,

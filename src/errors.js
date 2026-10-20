@@ -31,4 +31,9 @@ class DataError extends Error {
   }
 }
 
-module.exports = { LuxorApiError, DataError }
+/** The stable code at the start of an error, for the health channel. */
+function errorCode (err) {
+  return /\bE(RR)?_[A-Z_]+/.exec(err?.message)?.[0] || 'ERR_LUXOR_API'
+}
+
+module.exports = { LuxorApiError, DataError, errorCode }

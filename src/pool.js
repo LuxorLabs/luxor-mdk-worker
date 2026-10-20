@@ -295,11 +295,6 @@ class LuxorPool extends PoolService {
   }
 }
 
-/**
- * GET /v2/pool/summary/{currency}. Hashrates arrive as decimal strings in
- * H/s. `hashrate_1h` and the stale hashrates are not in the published
- * schema, so they are read when present and null otherwise.
- */
 /** @returns {LedgerTransaction} */
 function toLedgerTransaction (row) {
   const isKnownType = Object.values(TRANSACTION_TYPES).includes(row?.transaction_type)

@@ -31,6 +31,8 @@ async function main () {
   for (const name of entries.telemetry.keys()) {
     try {
       const value = await instance.telemetry.get(name)({})
+      // health reports an outage as a value, not a throw.
+      if (name === 'health' && value?.status !== 'OK') throw new Error(JSON.stringify(value))
       console.log(`${name}: ${JSON.stringify(value)}`)
     } catch (err) {
       failed++
