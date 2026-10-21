@@ -38,6 +38,13 @@
         "type": "number",
         "handler": "src/telemetry/estimated-earnings.js",
         "description": "Mining revenue over the last 24 hours, used as the estimate for today."
+      },
+      {
+        "name": "health",
+        "unit": "",
+        "type": "object",
+        "handler": "src/telemetry/health.js",
+        "description": "{ status: 'OK' } when the Luxor API answers for the configured scope, otherwise { status: 'OFFLINE', error } with a stable error code. Never includes the API key."
       }
     ],
     "commands": [],
@@ -60,7 +67,10 @@
       ]
     },
     "errors": {
-      "E_POOL_API": "Pool REST API request failed"
+      "E_POOL_API": "Pool REST API request failed, or no fresh poll yet",
+      "ERR_LUXOR_AUTH": "The API key is wrong or revoked",
+      "ERR_LUXOR_API": "A Luxor API request failed; the message carries the path and HTTP status",
+      "ERR_LUXOR_DATA": "A Luxor API response field is missing or malformed"
     }
   }
 }

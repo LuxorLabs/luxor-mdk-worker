@@ -9,7 +9,7 @@ const createTestnet = require('hyperdht/testnet')
 const HyperswarmRPC = require('@hyperswarm/rpc')
 const { createServer } = require('../../mock/server')
 const keys = require('../../mock/keys')
-const { startLuxorWorker, LUXOR_POOL } = require('../..')
+const { startLuxorWorker, LUXOR_POOL, plugin } = require('../..')
 const { ACTIONS, MESSAGE_TYPES, build, serialize, deserialize } = require('../../src/mdk').protocol
 const { previousDay } = require('../../src/utils/dates')
 
@@ -52,6 +52,7 @@ test('worker serves telemetry over HRPC against the mock', { timeout: 60000 }, a
 
   const initial = await send({ type: 'metrics' })
   t.ok(initial.payload.metrics.hashrate.error.includes('E_POOL_API'), 'no fabricated startup zeros')
+  t.alike(initial.payload.metrics.health, { status: 'OFFLINE', error: 'E_POOL_API' })
 
   const now = new Date()
   await worker.pool.fetchWorkers(now)
@@ -63,6 +64,8 @@ test('worker serves telemetry over HRPC against the mock', { timeout: 60000 }, a
   t.is(metrics.workers_online, 1)
   t.is(metrics.balance, 0.00125)
   t.is(metrics.estimated_earnings, 0.00012)
+  t.alike(metrics.health, { status: 'OK' })
+  t.absent(JSON.stringify(metrics).includes(keys.apiKey), 'the API key never leaves the worker')
 
   const workers = await worker.pool.getWorkers({})
   t.is(workers.workers.length, 2)
@@ -83,6 +86,21 @@ test('a site ID scope works end to end', { timeout: 30000 }, async t => {
   t.teardown(() => new Promise(resolve => pool.stop(resolve)))
   await pool.fetchWorkers(new Date())
   t.is(pool.data.workersData.workers.length, 2)
+})
+
+test('standalone health reports the same error code as directory-loaded', async t => {
+  const mock = await createServer({ port: 0 })
+  t.teardown(() => mock.app.close())
+  const storeDir = tempDir(t, 'health')
+  const pool = new LUXOR_POOL({ luxor: { ...keys, apiKey: 'wrong-key', apiUrl: mock.apiUrl, subaccounts: SUBACCOUNTS } }, { rack: 'test', root: storeDir, storeDir })
+  await pool.init()
+  t.teardown(() => new Promise(resolve => pool.stop(resolve)))
+  pool._logErr = () => {}
+  const health = plugin.loadHandler('src/telemetry/health.js', { section: 'telemetry', name: 'health' })
+
+  t.alike(await health({ device: pool }), { status: 'OFFLINE', error: 'E_POOL_API' }, 'no poll yet: nothing more specific to say')
+  await t.exception(pool.fetchStats(new Date()), /ERR_LUXOR_AUTH/)
+  t.alike(await health({ device: pool }), { status: 'OFFLINE', error: 'ERR_LUXOR_AUTH' }, 'a failed poll reports its cause')
 })
 
 test('stopping the pool aborts an in-flight HTTP request and removes signal listeners', async t => {

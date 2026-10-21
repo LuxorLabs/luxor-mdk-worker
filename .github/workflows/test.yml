@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   test:
-    runs-on: tenki-standard-small-2c-4g
+    runs-on: ubuntu-latest
     timeout-minutes: 20
 
     steps:
@@ -29,3 +29,6 @@ jobs:
 
       - name: Test
         run: npm test
+
+      - name: MDK Worker smoke test
+        run: node node_modules/@tetherto/mdk/packages/mdk-skill/src/skills/mdk-worker-plugin/scripts/worker-smoke.mjs .

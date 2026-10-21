@@ -1,3 +1,5 @@
 'use strict'
 
-module.exports = async (ctx) => ctx.device.getMetric('estimated_today_income')
+const { getSummary } = require('../client')
+
+module.exports = async () => (await getSummary()).revenue_24h

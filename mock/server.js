@@ -12,11 +12,13 @@ async function createServer (options = {}) {
   const { host = DEFAULT_HOST, port = DEFAULT_PORT, state = defaultState() } = options
 
   const app = fastify({ logger: false })
+  const requests = []
+  app.addHook('onRequest', async request => { requests.push(request.url) })
   app.register(routes, { state })
 
   try {
     const url = await app.listen({ host, port })
-    return { app, state, apiUrl: url }
+    return { app, state, requests, apiUrl: url }
   } catch (err) {
     await app.close()
     throw err
