@@ -1,0 +1,66 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "enabled": true,
+  "extends": ["config:recommended"],
+  "schedule": ["every weekend"],
+  "labels": ["dependencies", "renovate"],
+  "configMigration": true,
+  "rebaseWhen": "conflicted",
+  "lockFileMaintenance": {
+    "description": "A lock file refresh is only true of the tree it resolved against, so every merge to main leaves this branch describing a package.json that has moved. Rebasing on the base branch regenerates it, which keeps its green check a statement about the merge someone is actually about to make.",
+    "enabled": true,
+    "schedule": ["every weekend"],
+    "rebaseWhen": "behind-base-branch"
+  },
+  "prConcurrentLimit": 5,
+  "minimumReleaseAge": "14 days",
+  "internalChecksFilter": "strict",
+  "osvVulnerabilityAlerts": true,
+  "vulnerabilityAlerts": {
+    "labels": ["security"]
+  },
+  "packageRules": [
+    {
+      "description": "A major needs a proper read of its changelog, which rarely happens the week it lands. Park it on the dashboard so it stops holding a concurrency slot, and tick it there when someone is ready to do that work.",
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true
+    },
+    {
+      "description": "A lock file refresh carries no update anyone is waiting on, so it is created last and takes one of the concurrency slots above only when a real update does not need it.",
+      "matchUpdateTypes": ["lockFileMaintenance"],
+      "prPriority": -1
+    },
+    {
+      "description": "Manage github-actions SHA pins manually; a digest-bump PR would run CI with the new SHA before anyone reviews it.",
+      "matchManagers": ["github-actions"],
+      "enabled": false
+    },
+    {
+      "description": "Hold Node on major 24; package.json engines and the node-version in test.yml have to move together.",
+      "matchPackageNames": ["node"],
+      "allowedVersions": "/^24(\\.|-|$)/"
+    },
+    {
+      "description": "Batch non-major devDependency updates into one PR.",
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "devDependencies (non-major)"
+    },
+    {
+      "description": "The Holepunch stack (hyperdht and the @hyperswarm packages) shares the hypercore wire protocol and has to move as a set; a lone bump there desyncs the DHT from the RPC layer the worker dials over.",
+      "groupName": "holepunch",
+      "matchPackageNames": ["/^hyperdht$/", "/^@hyperswarm//", "/^hypercore$/", "/^hyperswarm$/"]
+    },
+    {
+      "description": "A 0.x release makes no compatibility promise, so a minor or a patch there breaks like a major does. Each gets its own PR rather than riding in a batch, where one broken member holds up the safe ones.",
+      "matchUpdateTypes": ["minor", "patch"],
+      "matchCurrentVersion": "<1.0.0",
+      "groupName": null
+    },
+    {
+      "description": "@tetherto/mdk is the upstream MDK contract, pinned by tag ref with the resolved commit held in the lock file. It is pre-1.0, so every bump is contract-breaking; the 0.x rule above already gives it its own PR, and this keeps it out of any batch and surfaces it ahead of routine updates.",
+      "matchPackageNames": ["@tetherto/mdk"],
+      "prPriority": 5
+    }
+  ]
+}
