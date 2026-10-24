@@ -20,6 +20,15 @@ npm --prefix node_modules/@tetherto/mdk install --ignore-scripts
 The second command installs MDK's own dependencies, which npm skips for a git
 dependency. The worker has no runtime dependencies and no install scripts.
 
+The committed `package.json` is the exception to that rule: it tracks
+`@tetherto/mdk` by its release tag (`#v0.10.0`) so Renovate can raise a PR for
+each new MDK release, which a bare SHA gives it no way to do; strict JSON has
+no comment slot to carry the tag beside the SHA the way pinned GitHub Actions
+do. `package-lock.json` still records the exact commit the tag resolved to and
+CI installs with `npm ci`, so only that locked commit is ever built: a
+force-moved tag cannot alter an existing install, and only a reviewed Renovate
+bump re-resolves it.
+
 ## Usage
 
 The worker runs on either MDK worker runtime. Pick one:
