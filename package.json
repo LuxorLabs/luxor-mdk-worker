@@ -47,7 +47,7 @@
     "@tetherto/mdk": "github:tetherto/mdk#v0.10.0",
     "brittle": "3.19.1",
     "fastify": "5.12.6",
-    "hyperdht": "6.32.0",
+    "hyperdht": "6.34.1",
     "standard": "17.1.2"
   },
   "overrides": {
