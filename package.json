@@ -43,11 +43,11 @@
     "@tetherto/mdk": "*"
   },
   "devDependencies": {
-    "@hyperswarm/rpc": "3.5.0",
+    "@hyperswarm/rpc": "3.5.1",
     "@tetherto/mdk": "github:tetherto/mdk#v0.10.0",
     "brittle": "3.19.1",
     "fastify": "5.12.6",
-    "hyperdht": "6.34.1",
+    "hyperdht": "6.36.0",
     "standard": "17.1.2"
   },
   "overrides": {
