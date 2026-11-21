@@ -44,7 +44,7 @@
   },
   "devDependencies": {
     "@hyperswarm/rpc": "3.5.0",
-    "@tetherto/mdk": "github:tetherto/mdk#v0.10.0",
+    "@tetherto/mdk": "github:tetherto/mdk#v0.13.1",
     "brittle": "3.19.1",
     "fastify": "5.12.6",
     "hyperdht": "6.34.1",
