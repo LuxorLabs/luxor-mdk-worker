@@ -31,3 +31,20 @@ test('mock paginates and rejects a future end_date', async t => {
   t.is(last.pagination.next_page_url, null)
   t.is((await get('/v2/pool/transactions/BTC?subaccount_names=mock-sub-1&start_date=2026-01-01&end_date=2999-01-01')).statusCode, 400)
 })
+
+test('mock matches routes by method like fastify did', async t => {
+  const { server } = await app(t)
+  const url = '/v2/pool/summary/BTC?subaccount_names=mock-sub-1'
+  const headers = { authorization: keys.apiKey }
+  t.is((await server.inject({ method: 'POST', url, headers })).statusCode, 404)
+  t.is((await server.inject({ method: 'DELETE', url, headers })).statusCode, 404)
+  t.is((await server.inject({ method: 'HEAD', url, headers })).statusCode, 200)
+  t.is((await server.inject({ url, headers })).statusCode, 200)
+})
+
+test('mock rejects a repeated scope key like fastify did', async t => {
+  const { server } = await app(t)
+  const get = url => server.inject({ url, headers: { authorization: keys.apiKey } })
+  t.is((await get('/v2/pool/summary/BTC?subaccount_names=mock-sub-1&subaccount_names=mock-sub-2')).statusCode, 400)
+  t.is((await get('/v2/pool/workers/BTC?subaccount_names=mock-sub-1&page_size=1&page_size=2')).statusCode, 400)
+})

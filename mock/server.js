@@ -22,8 +22,10 @@ function createApp () {
     }
     return r
   }
-  const routeOf = pathname => {
-    for (const [pattern, handler] of table) {
+  // fastify answers HEAD for every GET route and 404s any other method.
+  const routeOf = (method, pathname) => {
+    for (const [routeMethod, pattern, handler] of table) {
+      if (method !== routeMethod && !(routeMethod === 'GET' && method === 'HEAD')) continue
       const want = pattern.split('/')
       const got = pathname.split('/')
       if (want.length !== got.length) continue
@@ -36,11 +38,19 @@ function createApp () {
 
   async function handle (req, res) {
     const url = new URL(req.url, 'http://mock.invalid')
-    const route = routeOf(url.pathname)
-    req.query = Object.fromEntries(url.searchParams)
+    const route = routeOf(req.method, url.pathname)
+    // Like fastify's parser, a repeated key becomes an array of its values.
+    req.query = {}
+    for (const key of new Set(url.searchParams.keys())) {
+      const values = url.searchParams.getAll(key)
+      req.query[key] = values.length > 1 ? values : values[0]
+    }
     req.params = route ? route.params : {}
     const r = reply(res)
-    for (const hook of hooks.onRequest) await hook(req, r)
+    for (const hook of hooks.onRequest) {
+      await hook(req, r)
+      if (r.sent) return
+    }
     if (!route) {
       return r.code(404).send({ statusCode: 404, error: 'Not Found', message: 'Route not found' })
     }
@@ -54,16 +64,16 @@ function createApp () {
 
   const app = {
     addHook: (name, fn) => hooks[name].push(fn),
-    get: (pattern, handler) => table.push([pattern, handler]),
+    get: (pattern, handler) => table.push(['GET', pattern, handler]),
     register: (fn, opts = {}) => fn(app, opts),
-    inject: async ({ url, headers = {} }) => {
+    inject: async ({ method = 'GET', url, headers = {} }) => {
       const chunks = []
       const res = {
         statusCode: 200,
         writeHead (status) { res.statusCode = status },
         end (body) { if (body !== undefined) chunks.push(body) }
       }
-      await handle({ method: 'GET', url, headers }, res)
+      await handle({ method, url, headers }, res)
       const text = chunks.join('')
       return { statusCode: res.statusCode, json: () => JSON.parse(text), body: text }
     },
@@ -84,6 +94,10 @@ async function createServer (options = {}) {
 
   const server = http.createServer((req, res) => {
     app.handle(req, res).catch(err => {
+      if (res.headersSent) {
+        res.destroy(err)
+        return
+      }
       res.writeHead(500, { 'content-type': 'application/json' })
       res.end(JSON.stringify({ statusCode: 500, error: 'Internal Server Error', message: err.message }))
     })
@@ -97,8 +111,17 @@ async function createServer (options = {}) {
 
   try {
     await new Promise((resolve, reject) => {
-      server.once('error', reject)
-      server.listen(port, host, resolve)
+      const onError = err => {
+        server.removeListener('listening', onListening)
+        reject(err)
+      }
+      const onListening = () => {
+        server.removeListener('error', onError)
+        resolve()
+      }
+      server.once('error', onError)
+      server.once('listening', onListening)
+      server.listen(port, host)
     })
     return { app, state, requests, apiUrl: `http://${host}:${server.address().port}` }
   } catch (err) {
