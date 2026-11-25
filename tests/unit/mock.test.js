@@ -1,16 +1,12 @@
 'use strict'
 
 const test = require('brittle')
-const fastify = require('fastify')
-const routes = require('../../mock/routes')
-const defaultState = require('../../mock/state')
+const { createServer } = require('../../mock/server')
 const keys = require('../../mock/keys')
 
 async function app (t) {
-  const server = fastify()
+  const { app: server, state } = await createServer({ port: 0 })
   t.teardown(() => server.close())
-  const state = defaultState()
-  server.register(routes, { state })
   return { server, state }
 }
 
