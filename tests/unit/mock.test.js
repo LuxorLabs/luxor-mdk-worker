@@ -38,7 +38,9 @@ test('mock matches routes by method like fastify did', async t => {
   const headers = { authorization: keys.apiKey }
   t.is((await server.inject({ method: 'POST', url, headers })).statusCode, 404)
   t.is((await server.inject({ method: 'DELETE', url, headers })).statusCode, 404)
-  t.is((await server.inject({ method: 'HEAD', url, headers })).statusCode, 200)
+  const head = await server.inject({ method: 'HEAD', url, headers })
+  t.is(head.statusCode, 200)
+  t.is(head.body, '')
   t.is((await server.inject({ url, headers })).statusCode, 200)
 })
 

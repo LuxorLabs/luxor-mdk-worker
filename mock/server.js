@@ -71,7 +71,7 @@ function createApp () {
       const res = {
         statusCode: 200,
         writeHead (status) { res.statusCode = status },
-        end (body) { if (body !== undefined) chunks.push(body) }
+        end (body) { if (body !== undefined && method !== 'HEAD') chunks.push(body) }
       }
       await handle({ method, url, headers }, res)
       const text = chunks.join('')
